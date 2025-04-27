@@ -7,7 +7,7 @@ ValidarIdade:
 ValidarValorTransacao:
 - $.valor > 0
 - $.valor <= $.limiteMaximo
-- $.moeda == "BRL" || $.moeda == "USD"
+- $.moeda == "BRL" OR $.moeda == "USD"
 
 CalcularDesconto:
 - $.valor > 100
@@ -25,4 +25,5 @@ ValidarEndereco:
 
 VerificarLimites:
 - COUNT($.transacoes) < $.limites.maxTransacoes
-- SUM(map($.transacoes, "valor")) + $.valor <= $.limites.valorTotal
+- SET $.somaTransacoes = SUM($.transacoes[*].valor)
+- $.somaTransacoes + $.valor <= $.limites.valorTotal

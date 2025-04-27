@@ -1,6 +1,7 @@
 package policy
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -330,6 +331,73 @@ func (pe *PolicyEngine) evaluateCondition(condition string, data interface{}) Co
 
 	result.Error = fmt.Sprintf("formato de condição não reconhecido: %s", condition)
 	return result
+}
+
+// Implementação da função SUM para o motor de políticas
+func Sum(args ...interface{}) (interface{}, error) {
+	if len(args) != 1 {
+		return nil, errors.New("SUM requires exactly one argument")
+	}
+
+	array, ok := args[0].([]interface{})
+	if !ok {
+		return nil, errors.New("SUM argument must be an array")
+	}
+
+	var sum float64
+	for _, item := range array {
+		value, ok := item.(float64)
+		if !ok {
+			// Tenta converter para float se possível
+			switch v := item.(type) {
+			case int:
+				value = float64(v)
+			case int32:
+				value = float64(v)
+			case int64:
+				value = float64(v)
+			default:
+				return nil, errors.New("array item is not a number")
+			}
+		}
+		sum += value
+	}
+
+	return sum, nil
+}
+
+// Implementação da função Map para o motor de políticas
+func Map(args ...interface{}) (interface{}, error) {
+	if len(args) != 2 {
+		return nil, errors.New("MAP requires exactly two arguments")
+	}
+
+	array, ok := args[0].([]interface{})
+	if !ok {
+		return nil, errors.New("first MAP argument must be an array")
+	}
+
+	property, ok := args[1].(string)
+	if !ok {
+		return nil, errors.New("second MAP argument must be a string")
+	}
+
+	result := make([]interface{}, len(array))
+	for i, item := range array {
+		obj, ok := item.(map[string]interface{})
+		if !ok {
+			return nil, errors.New("array item is not an object")
+		}
+
+		value, exists := obj[property]
+		if !exists {
+			return nil, fmt.Errorf("property '%s' not found in object", property)
+		}
+
+		result[i] = value
+	}
+
+	return result, nil
 }
 
 // resolveValue resolve um valor a partir de uma expressão
