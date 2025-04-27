@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/gorilla/mux"
+	"github.com/raywall/aws-policy-engine-go/pkg/core/request"
 	"github.com/raywall/aws-policy-engine-go/pkg/json/extractor"
 	"github.com/raywall/aws-policy-engine-go/pkg/json/schema"
 )
@@ -47,17 +48,20 @@ func main() {
 }
 
 func handleEvaluate(w http.ResponseWriter, r *http.Request) {
-	var request, response interface{}
+	var (
+		req request.Request
+		res interface{}
+	)
 
 	// Decodificar o JSON da requisição
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&request)
+	err := decoder.Decode(&req)
 	if err != nil {
 		handleError(w, "invalid_request", "Erro ao decodificar requisição", http.StatusBadRequest)
 		return
 	}
 
-	isValid, errs := jsonSchema.Validate(request)
+	isValid, errs := jsonSchema.Validate(req.Data)
 	if !isValid {
 		data := []string{"Erros de validação:"}
 		for _, e := range errs {
@@ -68,12 +72,12 @@ func handleEvaluate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ex, err := extractor.NewFromStruct(request)
+	ex, err := extractor.NewFromStruct(req.Data)
 	if err != nil {
 		handleError(w, "invalid_request", err, http.StatusBadRequest)
 	}
 
-	response, err = ex.Extract("$.data")
+	res, err = ex.Extract("$.transacoes")
 	if err != nil {
 		handleError(w, "invalid_request", err, http.StatusBadRequest)
 	}
@@ -81,7 +85,7 @@ func handleEvaluate(w http.ResponseWriter, r *http.Request) {
 	// Enviar resposta
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(response)
+	_ = json.NewEncoder(w).Encode(res)
 }
 
 func handleError(w http.ResponseWriter, code, message interface{}, statusCode int) {

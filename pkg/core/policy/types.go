@@ -1,0 +1,43 @@
+package policy
+
+import "encoding/json"
+
+// PolicyResult representa o resultado da aplicação de uma política
+type PolicyResult struct {
+	Name       string            `json:"name"`
+	Success    bool              `json:"success"`
+	Conditions []ConditionResult `json:"conditions,omitempty"`
+}
+
+// ConditionResult representa o resultado da avaliação de uma condição
+type ConditionResult struct {
+	Condition string `json:"condition"`
+	Result    bool   `json:"result"`
+}
+
+// ProcessResult representa o resultado do processamento das políticas
+type ProcessResult struct {
+	Success         bool
+	Data            map[string]interface{}
+	AppliedPolicies []PolicyResult
+}
+
+// DeepCopy realiza uma cópia profunda de um mapa usando json marshal/unmarshal
+func DeepCopy(src map[string]interface{}) (map[string]interface{}, error) {
+	if src == nil {
+		return nil, nil
+	}
+
+	data, err := json.Marshal(src)
+	if err != nil {
+		return nil, err
+	}
+
+	var dst map[string]interface{}
+	err = json.Unmarshal(data, &dst)
+	if err != nil {
+		return nil, err
+	}
+
+	return dst, nil
+}
