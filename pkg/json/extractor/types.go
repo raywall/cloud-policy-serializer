@@ -10,6 +10,23 @@ type JSONExtractor struct {
 	Data interface{}
 }
 
+// Tipos para os segmentos do caminho
+type pathSegment interface {
+	String() string
+}
+
+type propertySegment struct {
+	name string
+}
+
+func (p propertySegment) String() string {
+	return "." + p.name
+}
+
+type arrayIndexSegment struct {
+	index int
+}
+
 // NewFromBytes cria um novo extrator a partir de bytes JSON
 func NewFromBytes(jsonData []byte) (*JSONExtractor, error) {
 	var data interface{}

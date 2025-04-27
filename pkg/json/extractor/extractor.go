@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"regexp"
-	"strconv"
 	"strings"
 )
 
@@ -27,69 +25,39 @@ func (je *JSONExtractor) Extract(path string) (interface{}, error) {
 
 	// Percorrer todos os segmentos do caminho
 	for _, segment := range segments {
-		// Verificar se é um acesso de array
-		arrayAccess := regexp.MustCompile(`^(.+)\[(\d+)\]$`).FindStringSubmatch(segment)
-
-		if arrayAccess != nil {
-			// É um acesso de array: extrair o nome da propriedade e o índice
-			property := arrayAccess[1]
-			index, _ := strconv.Atoi(arrayAccess[2])
-
-			// Se há uma propriedade antes do índice
-			if property != "" {
-				// Acessar a propriedade do objeto
-				obj, ok := current.(map[string]interface{})
-				if !ok {
-					return nil, fmt.Errorf("não é possível acessar a propriedade '%s' em um valor não-objeto", property)
-				}
-
-				value, exists := obj[property]
-				if !exists {
-					return nil, fmt.Errorf("propriedade '%s' não encontrada", property)
-				}
-
-				// Verificar se o valor é um array
-				arr, ok := value.([]interface{})
-				if !ok {
-					return nil, fmt.Errorf("'%s' não é um array", property)
-				}
-
-				// Verificar se o índice está dentro dos limites
-				if index < 0 || index >= len(arr) {
-					return nil, fmt.Errorf("índice %d fora dos limites para o array '%s' (tamanho: %d)", index, property, len(arr))
-				}
-
-				// Atualizar o valor atual para o elemento do array
-				current = arr[index]
-			} else {
-				// É um acesso direto de array sem propriedade
-				arr, ok := current.([]interface{})
-				if !ok {
-					return nil, errors.New("não é possível acessar um índice em um valor não-array")
-				}
-
-				// Verificar se o índice está dentro dos limites
-				if index < 0 || index >= len(arr) {
-					return nil, fmt.Errorf("índice %d fora dos limites (tamanho: %d)", index, len(arr))
-				}
-
-				// Atualizar o valor atual para o elemento do array
-				current = arr[index]
-			}
-		} else {
-			// É um acesso de propriedade simples
+		switch seg := segment.(type) {
+		case propertySegment:
+			// Acesso de propriedade simples
 			obj, ok := current.(map[string]interface{})
 			if !ok {
-				return nil, fmt.Errorf("não é possível acessar a propriedade '%s' em um valor não-objeto", segment)
+				return nil, fmt.Errorf("não é possível acessar a propriedade '%s' em um valor não-objeto", seg.name)
 			}
 
-			value, exists := obj[segment]
+			value, exists := obj[seg.name]
 			if !exists {
-				return nil, fmt.Errorf("propriedade '%s' não encontrada", segment)
+				return nil, fmt.Errorf("propriedade '%s' não encontrada", seg.name)
 			}
 
 			// Atualizar o valor atual
 			current = value
+
+		case arrayIndexSegment:
+			// Acesso de array por índice
+			arr, ok := current.([]interface{})
+			if !ok {
+				return nil, errors.New("não é possível acessar um índice em um valor não-array")
+			}
+
+			// Verificar se o índice está dentro dos limites
+			if seg.index < 0 || seg.index >= len(arr) {
+				return nil, fmt.Errorf("índice %d fora dos limites (tamanho: %d)", seg.index, len(arr))
+			}
+
+			// Atualizar o valor atual para o elemento do array
+			current = arr[seg.index]
+
+		default:
+			return nil, fmt.Errorf("tipo de segmento de caminho não suportado: %T", segment)
 		}
 	}
 

@@ -1,16 +1,17 @@
-package schema
+package policy
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 
 	"github.com/raywall/aws-policy-engine-go/pkg/core/loader"
 )
 
+const withDecryption bool = true
+
 type (
-	SchemaLoader interface {
-		Load() (*Schema, error)
+	PolicyLoader interface {
+		Load() (*PolicyEngine, error)
 	}
 
 	localLoader struct {
@@ -26,7 +27,7 @@ type (
 	}
 )
 
-func NewLoader(source string) (SchemaLoader, error) {
+func NewLoader(source string) (PolicyLoader, error) {
 	ld, err := loader.NewLoader(source)
 	if err != nil {
 		return nil, err
@@ -50,58 +51,46 @@ func NewLoader(source string) (SchemaLoader, error) {
 	}
 }
 
-func (l *localLoader) Load() (*Schema, error) {
-	jsonSchema := &Schema{}
-
+func (l *localLoader) Load() (*PolicyEngine, error) {
 	data, err := os.ReadFile(l.loader.Path)
 	if err != nil {
 		return nil, fmt.Errorf("error reading response body: %v", err)
 	}
 
-	if err = load(jsonSchema, data); err != nil {
+	jsonSchema, err := NewPolicyEngine(data)
+	if err != nil {
 		return nil, err
 	}
 
 	return jsonSchema, nil
 }
 
-func (l *ssmLoader) Load() (*Schema, error) {
-	var (
-		jsonSchema     = &Schema{}
-		withDecryption = true
-	)
-
+func (l *ssmLoader) Load() (*PolicyEngine, error) {
 	data, err := loader.GetParameter(l.loader.Client, l.loader.Path, withDecryption)
 	if err != nil {
 		return nil, err
 	}
-	if err = load(jsonSchema, data); err != nil {
+
+	jsonSchema, err := NewPolicyEngine(data)
+	if err != nil {
 		return nil, err
 	}
 
 	return jsonSchema, nil
 }
 
-func (l *s3Loader) Load() (*Schema, error) {
-	jsonSchema := &Schema{}
+func (l *s3Loader) Load() (*PolicyEngine, error) {
 	bucket, key := loader.ParseS3Path(l.loader.Path)
 
 	data, err := loader.GetObject(l.loader.Client, bucket, key)
 	if err != nil {
 		return nil, err
 	}
-	if err = load(jsonSchema, data); err != nil {
+
+	jsonSchema, err := NewPolicyEngine(data)
+	if err != nil {
 		return nil, err
 	}
 
 	return jsonSchema, nil
-}
-
-// load carrega um JSON Schema draft-07
-func load(schema *Schema, data []byte) error {
-	if err := json.Unmarshal(data, schema); err != nil {
-		return fmt.Errorf("unable to serialize ssm template file: %v", err)
-	}
-
-	return nil
 }

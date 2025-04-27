@@ -8,27 +8,42 @@ import (
 	"os"
 
 	"github.com/gorilla/mux"
+	"github.com/raywall/aws-policy-engine-go/pkg/core/policy"
 	"github.com/raywall/aws-policy-engine-go/pkg/core/request"
-	"github.com/raywall/aws-policy-engine-go/pkg/json/extractor"
+	"github.com/raywall/aws-policy-engine-go/pkg/core/response"
 	"github.com/raywall/aws-policy-engine-go/pkg/json/schema"
 )
 
-var jsonSchema *schema.Schema
+var (
+	jsonSchema   *schema.Schema
+	policyEngine *policy.PolicyEngine
+)
 
 func init() {
-	loader, err := schema.NewLoader("/Users/macmini/Documents/workspace/go/aws-policy-engine-go/examples/request_schema.json")
+	sl, err := schema.NewLoader("examples/request_schema.json")
 	if err != nil {
 		panic(err)
 	}
 
 	// Exemplo de schema draft-07 (como no enunciado)
-	jsonSchema, err = loader.Load()
+	jsonSchema, err = sl.Load()
+	if err != nil {
+		panic(err)
+	}
+
+	pl, err := policy.NewLoader("examples/policy.yaml")
+	if err != nil {
+		panic(err)
+	}
+
+	// Exemplo de arquivo de políticas em formato YAML
+	policyEngine, err = pl.Load()
 	if err != nil {
 		panic(err)
 	}
 
 	// Exemplo de dados JSON a validar
-	data, err := os.ReadFile("/Users/macmini/Documents/workspace/go/aws-policy-engine-go/examples/request_data.json")
+	data, err := os.ReadFile("examples/request_data.json")
 	if err != nil {
 		panic(err)
 	}
@@ -49,18 +64,22 @@ func main() {
 
 func handleEvaluate(w http.ResponseWriter, r *http.Request) {
 	var (
-		req request.Request
-		res interface{}
+		req = &request.Request{}
+		res *response.Response
 	)
 
 	// Decodificar o JSON da requisição
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&req)
+	err := decoder.Decode(req)
 	if err != nil {
-		handleError(w, "invalid_request", "Erro ao decodificar requisição", http.StatusBadRequest)
+		fmt.Println("invalid_json_decode", "Erro ao decodificar requisição")
 		return
 	}
 
+	// Instancia o response da requisição
+	res = response.NewResponse(req)
+
+	// Validar o JSON Schema dos dados recebidos
 	isValid, errs := jsonSchema.Validate(req.Data)
 	if !isValid {
 		data := []string{"Erros de validação:"}
@@ -68,28 +87,18 @@ func handleEvaluate(w http.ResponseWriter, r *http.Request) {
 			data = append(data, fmt.Sprintf("- %s", e))
 		}
 
-		handleError(w, "invalid_request", data, http.StatusBadRequest)
+		res.SendError(w, "invalid_json_schema", err)
 		return
 	}
 
-	ex, err := extractor.NewFromStruct(req.Data)
-	if err != nil {
-		handleError(w, "invalid_request", err, http.StatusBadRequest)
+	// Executar políticas nos dados recebidos
+	if err = policyEngine.ExecutePolicies(req); err != nil {
+		res.SendError(w, "invalid_exec_policies", err)
+		return
 	}
 
-	res, err = ex.Extract("$.transacoes")
-	if err != nil {
-		handleError(w, "invalid_request", err, http.StatusBadRequest)
-	}
+	res.BuildResponse(policyEngine, req.Data, nil)
 
 	// Enviar resposta
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(res)
-}
-
-func handleError(w http.ResponseWriter, code, message interface{}, statusCode int) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCode)
-	_ = json.NewEncoder(w).Encode(message)
+	res.Send(w)
 }

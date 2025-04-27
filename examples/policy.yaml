@@ -1,29 +1,28 @@
 # Arquivo de Políticas
 
 ValidarIdade:
-- data.idade >= 18
-- data.tipo == "adulto"
+- $.idade >= 18
+- $.tipo == "adulto"
 
 ValidarValorTransacao:
-- data.valor > 0
-- data.valor <= data.limiteMaximo
-- data.moeda == "BRL" || data.moeda == "USD"
+- $.valor > 0
+- $.valor <= $.limiteMaximo
+- $.moeda == "BRL" || $.moeda == "USD"
 
 CalcularDesconto:
-- data.valor > 100
-- SET data.desconto = data.valor * 0.1
-- IF data.cliente.tipo == "premium" THEN SET data.desconto = data.valor * 0.15
+- $.valor > 100
+- SET $.desconto = $.valor * 0.1
+- IF $.cliente.tipo == "premium" THEN SET $.desconto = $.valor * 0.15
 
 AplicarImpostos:
-- SET data.impostos = {}
-- SET data.impostos.iss = data.valor * 0.05
-- IF data.tipo == "servico" THEN SET data.impostos.pis = data.valor * 0.0165
+- SET $.impostos.iss = $.valor * 0.05
+- IF $.tipo == "servico" THEN SET $.impostos.pis = $.valor * 0.0165
 
 ValidarEndereco:
-- data.endereco.cep != null
-- data.endereco.cidade != null
-- data.endereco.estado IN ["SP", "RJ", "MG", "RS"]
+- $.endereco.cep != null
+- $.endereco.cidade != null
+- $.endereco.estado IN ["SP", "RJ", "MG", "RS"]
 
 VerificarLimites:
-- COUNT(data.transacoes) < data.limites.maxTransacoes
-- SUM(map(data.transacoes, "valor")) + data.valor <= data.limites.valorTotal
+- COUNT($.transacoes) < $.limites.maxTransacoes
+- SUM(map($.transacoes, "valor")) + $.valor <= $.limites.valorTotal
