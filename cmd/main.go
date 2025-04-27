@@ -8,7 +8,8 @@ import (
 	"os"
 
 	"github.com/gorilla/mux"
-	"github.com/raywall/aws-policy-engine-go/pkg/schema"
+	"github.com/raywall/aws-policy-engine-go/pkg/json/extractor"
+	"github.com/raywall/aws-policy-engine-go/pkg/json/schema"
 )
 
 var jsonSchema *schema.Schema
@@ -41,12 +42,12 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/evaluate", handleEvaluate).Methods("POST")
 
-	fmt.Println("Servidor iniciado em :8080")
-	log.Fatal(http.ListenAndServe(":8080", r))
+	fmt.Println("Servidor iniciado em :9000")
+	log.Fatal(http.ListenAndServe(":9000", r))
 }
 
 func handleEvaluate(w http.ResponseWriter, r *http.Request) {
-	var request interface{}
+	var request, response interface{}
 
 	// Decodificar o JSON da requisição
 	decoder := json.NewDecoder(r.Body)
@@ -67,10 +68,20 @@ func handleEvaluate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ex, err := extractor.NewFromStruct(request)
+	if err != nil {
+		handleError(w, "invalid_request", err, http.StatusBadRequest)
+	}
+
+	response, err = ex.Extract("$.data")
+	if err != nil {
+		handleError(w, "invalid_request", err, http.StatusBadRequest)
+	}
+
 	// Enviar resposta
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode("JSON válido segundo o schema!")
+	_ = json.NewEncoder(w).Encode(response)
 }
 
 func handleError(w http.ResponseWriter, code, message interface{}, statusCode int) {
