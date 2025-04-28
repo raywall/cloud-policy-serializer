@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/raywall/aws-policy-engine-go/pkg/core/request"
-	"github.com/raywall/aws-policy-engine-go/pkg/json/extractor"
 	"gopkg.in/yaml.v3"
 )
 
@@ -97,8 +96,8 @@ func (pe *PolicyEngine) executeRule(rule string) ConditionResult {
 		thenAction := ifMatch[2]
 
 		// Avaliar a condição
-		condResult := pe.evaluateCondition(condition, pe.request.Data)
-		if !condResult.Success {
+		if _, err := pe.evaluateCondition(condition); err != nil {
+			// if !condResult.Success {
 			// Se a condição falhar, a regra ainda é considerada bem-sucedida
 			// porque é uma condição condicional
 			result.Success = true
@@ -117,34 +116,12 @@ func (pe *PolicyEngine) executeRule(rule string) ConditionResult {
 	}
 
 	// Caso contrário, é uma condição de validação padrão
-	return pe.evaluateCondition(rule, pe.request.Data)
-}
-
-// executeSetOperation executa uma operação SET nos dados
-func (pe *PolicyEngine) executeSetOperation(targetPath, expression string) error {
-	// Limpa os caminhos JSONPath
-	targetPath = strings.TrimSpace(targetPath)
-	if targetPath[0] == '$' {
-		targetPath = targetPath[1:]
-	}
-
-	// Avalia a expressão para obter o valor
-	value, err := pe.evaluateExpression(expression, pe.request.Data)
+	res, err := pe.evaluateCondition(rule)
 	if err != nil {
-		return fmt.Errorf("erro ao avaliar expressão '%s': %v", expression, err)
+		result.Success = false
+		result.Error = err.Error()
 	}
 
-	ex, err := extractor.NewFromStruct(pe.request.Data)
-	if err != nil {
-		return err
-	}
-
-	// Define o valor no caminho especificado
-	err = ex.SetValueByPath(targetPath, value)
-	if err != nil {
-		return fmt.Errorf("erro ao definir valor em '%s': %v", targetPath, err)
-	}
-
-	pe.request.Data = ex.Data.(map[string]interface{})
-	return nil
+	result.Success = res
+	return result
 }
