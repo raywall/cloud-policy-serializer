@@ -36,7 +36,7 @@ func (res *Response) send(w http.ResponseWriter, statusCode int) {
 	case true:
 		result = res
 	default:
-		result = res.Data
+		result = res.formattedResponse
 	}
 
 	if err := json.NewEncoder(w).Encode(result); err != nil {

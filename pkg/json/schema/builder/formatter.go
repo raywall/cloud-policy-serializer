@@ -34,7 +34,7 @@ func (sf *SchemaFormatter) FormatResponse(response map[string]interface{}) (map[
 	}
 
 	// Valida e formata os dados conforme o schema
-	formatted, err := sf.validateAndFormat(data, sf.Schema.(map[string]interface{}))
+	formatted, err := sf.validateAndFormat(data, *sf.Schema)
 	if err != nil {
 		return nil, err
 	}

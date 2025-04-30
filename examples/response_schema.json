@@ -2,60 +2,76 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
     "properties": {
-        "idade": {
-            "type": "integer",
+        "valor": {
+            "type": "number",
             "minimum": 0
         },
-        "tipo": {
-            "type": "string",
-            "enum": [
-                "adulto",
-                "juvenil",
-                "senior",
-                "outro"
-            ]
+        "limiteMaximo": {
+            "type": "number",
+            "minimum": 0
         },
-        "cliente": {
+        "moeda": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3,
+            "pattern": "^[A-Z]{3}$",
+            "description": "Código da moeda (ex: BRL)"
+        },
+        "impostos": {
             "type": "object",
             "properties": {
-                "tipo": {
-                    "type": "string",
-                    "enum": [
-                        "premium",
-                        "regular",
-                        "vip"
-                    ]
+                "iss": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "pis": {
+                    "type": "number",
+                    "minimum": 0
                 }
             },
             "required": [
-                "tipo"
+                "iss",
+                "pis"
             ],
             "additionalProperties": false
         },
-        "endereco": {
+        "transacoes": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "valor": {
+                        "type": "number",
+                        "minimum": 0
+                    }
+                },
+                "required": [
+                    "id",
+                    "valor"
+                ],
+                "additionalProperties": false
+            }
+        },
+        "limites": {
             "type": "object",
             "properties": {
-                "cep": {
-                    "type": "string",
-                    "pattern": "^\\d{5}-\\d{3}$"
+                "maxTransacoes": {
+                    "type": "integer",
+                    "minimum": 0
                 },
-                "cidade": {
-                    "type": "string"
-                },
-                "estado": {
-                    "type": "string",
-                    "minLength": 2,
-                    "maxLength": 2,
-                    "pattern": "^[A-Z]{2}$"
+                "valorTotal": {
+                    "type": "number",
+                    "minimum": 0
                 }
             },
             "required": [
-                "cep",
-                "cidade",
-                "estado"
+                "maxTransacoes",
+                "valorTotal"
             ],
             "additionalProperties": false
         }
-    },
-    "additionalProperties": false
+    }
 }

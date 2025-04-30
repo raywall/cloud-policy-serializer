@@ -2,6 +2,8 @@ package builder
 
 import (
 	"os"
+
+	"github.com/raywall/aws-policy-engine-go/pkg/json/schema"
 )
 
 // SchemaType representa os tipos suportados no schema JSON
@@ -19,7 +21,7 @@ const (
 
 // SchemaFormatter encapsula a funcionalidade de formatação baseada em Schema
 type SchemaFormatter struct {
-	Schema interface{}
+	Schema *schema.Schema
 }
 
 // LoadSchemaFromFile carrega um schema a partir de um arquivo

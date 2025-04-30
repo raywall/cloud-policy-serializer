@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 
 	"github.com/raywall/aws-policy-engine-go/pkg/core/policy"
@@ -82,13 +83,6 @@ func handleEvaluate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Lê o corpo da requisição
-	// body, err := io.ReadAll(r.Body)
-	// if err != nil {
-	// 	http.Error(w, fmt.Sprintf("Erro ao ler corpo da requisição: %v", err), http.StatusBadRequest)
-	// 	return
-	// }
-
 	// Decodifica o JSON recebido no body da requisição
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(req)
@@ -102,8 +96,15 @@ func handleEvaluate(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
+	// Verifica se a solicitação está em modo debug
+	responseDebug := false
+	queryValues, err := url.ParseQuery(r.URL.RawQuery)
+	if queryValues.Get("debug") == "true" {
+		responseDebug = true
+	}
+
 	// Instancia o response da requisição
-	res = response.NewResponse(responseSchema, req, false)
+	res = response.NewResponse(responseSchema, req, responseDebug)
 
 	// Validar o JSON Schema dos dados recebidos
 	isValid, errs := requestSchema.Validate(req.Data)
@@ -125,6 +126,7 @@ func handleEvaluate(w http.ResponseWriter, r *http.Request) {
 
 	// Formata e envia a resposta de acordo com o Schema
 	res.BuildResponse(policyEngine, req.Data, nil)
+	fmt.Println(res.Error)
 
 	// Enviar resposta
 	res.Send(w)
