@@ -34,44 +34,6 @@
                 "pis"
             ],
             "additionalProperties": false
-        },
-        "transacoes": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "string"
-                    },
-                    "valor": {
-                        "type": "number",
-                        "minimum": 0
-                    }
-                },
-                "required": [
-                    "id",
-                    "valor"
-                ],
-                "additionalProperties": false
-            }
-        },
-        "limites": {
-            "type": "object",
-            "properties": {
-                "maxTransacoes": {
-                    "type": "integer",
-                    "minimum": 0
-                },
-                "valorTotal": {
-                    "type": "number",
-                    "minimum": 0
-                }
-            },
-            "required": [
-                "maxTransacoes",
-                "valorTotal"
-            ],
-            "additionalProperties": false
         }
     }
 }

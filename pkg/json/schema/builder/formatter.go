@@ -92,24 +92,94 @@ func (sf *SchemaFormatter) validateAndFormat(value interface{}, s map[string]int
 	}
 }
 
+// // formatObject formata um objeto de acordo com o schema
+// func (sf *SchemaFormatter) formatObject(value interface{}, s map[string]interface{}) (interface{}, error) {
+// 	// Verificar se o valor é um objeto
+// 	obj, ok := value.(map[string]interface{})
+// 	if !ok {
+// 		return nil, fmt.Errorf("valor não é um objeto: %v", value)
+// 	}
+
+// 	// Resultado formatado
+// 	result := make(map[string]interface{})
+
+// 	// Verificar propriedades definidas no schema
+// 	properties, hasProps := s["properties"].(map[string]interface{})
+// 	if !hasProps {
+// 		return obj, nil // Sem propriedades definidas, retorna o objeto como está
+// 	}
+
+// 	// Verificar propriedades adicionais
+// 	additionalProps := true
+// 	if ap, exists := s["additionalProperties"]; exists {
+// 		if apBool, ok := ap.(bool); ok {
+// 			additionalProps = apBool
+// 		}
+// 	}
+
+// 	// Verificar propriedades obrigatórias
+// 	requiredProps := make(map[string]bool)
+// 	if required, exists := s["required"].([]interface{}); exists {
+// 		for _, req := range required {
+// 			if reqStr, ok := req.(string); ok {
+// 				requiredProps[reqStr] = true
+// 			}
+// 		}
+// 	}
+
+// 	// Processar cada propriedade definida no schema
+// 	for propName, propSchema := range properties {
+// 		propSchemaMap, ok := propSchema.(map[string]interface{})
+// 		if !ok {
+// 			return nil, fmt.Errorf("schema inválido para propriedade '%s'", propName)
+// 		}
+
+// 		// Verificar se a propriedade existe no objeto
+// 		if propValue, exists := obj[propName]; exists {
+// 			// Validar e formatar o valor da propriedade
+// 			formattedValue, err := sf.validateAndFormat(propValue, propSchemaMap)
+// 			if err != nil {
+// 				return nil, fmt.Errorf("erro na propriedade '%s': %w", propName, err)
+// 			}
+// 			result[propName] = formattedValue
+// 		} else if requiredProps[propName] {
+// 			// Propriedade obrigatória ausente
+// 			return nil, fmt.Errorf("propriedade obrigatória '%s' ausente", propName)
+// 		}
+// 	}
+
+// 	// Se não permite propriedades adicionais, verificar se existem propriedades não definidas
+// 	if !additionalProps {
+// 		for propName := range obj {
+// 			if _, defined := properties[propName]; !defined {
+// 				return nil, fmt.Errorf("propriedade adicional não permitida: '%s'", propName)
+// 			}
+// 		}
+// 	} else {
+// 		// Se propriedades adicionais são permitidas, copiar as que não estão no schema
+// 		for propName, propValue := range obj {
+// 			if _, defined := properties[propName]; !defined {
+// 				result[propName] = propValue
+// 			}
+// 		}
+// 	}
+
+// 	return result, nil
+// }
+
 // formatObject formata um objeto de acordo com o schema
 func (sf *SchemaFormatter) formatObject(value interface{}, s map[string]interface{}) (interface{}, error) {
-	// Verificar se o valor é um objeto
 	obj, ok := value.(map[string]interface{})
 	if !ok {
 		return nil, fmt.Errorf("valor não é um objeto: %v", value)
 	}
 
-	// Resultado formatado
 	result := make(map[string]interface{})
-
-	// Verificar propriedades definidas no schema
 	properties, hasProps := s["properties"].(map[string]interface{})
 	if !hasProps {
-		return obj, nil // Sem propriedades definidas, retorna o objeto como está
+		return obj, nil
 	}
 
-	// Verificar propriedades adicionais
 	additionalProps := true
 	if ap, exists := s["additionalProperties"]; exists {
 		if apBool, ok := ap.(bool); ok {
@@ -117,7 +187,6 @@ func (sf *SchemaFormatter) formatObject(value interface{}, s map[string]interfac
 		}
 	}
 
-	// Verificar propriedades obrigatórias
 	requiredProps := make(map[string]bool)
 	if required, exists := s["required"].([]interface{}); exists {
 		for _, req := range required {
@@ -127,39 +196,29 @@ func (sf *SchemaFormatter) formatObject(value interface{}, s map[string]interfac
 		}
 	}
 
-	// Processar cada propriedade definida no schema
+	// Process schema-defined properties
 	for propName, propSchema := range properties {
 		propSchemaMap, ok := propSchema.(map[string]interface{})
 		if !ok {
 			return nil, fmt.Errorf("schema inválido para propriedade '%s'", propName)
 		}
 
-		// Verificar se a propriedade existe no objeto
 		if propValue, exists := obj[propName]; exists {
-			// Validar e formatar o valor da propriedade
 			formattedValue, err := sf.validateAndFormat(propValue, propSchemaMap)
 			if err != nil {
 				return nil, fmt.Errorf("erro na propriedade '%s': %w", propName, err)
 			}
 			result[propName] = formattedValue
 		} else if requiredProps[propName] {
-			// Propriedade obrigatória ausente
 			return nil, fmt.Errorf("propriedade obrigatória '%s' ausente", propName)
 		}
 	}
 
-	// Se não permite propriedades adicionais, verificar se existem propriedades não definidas
+	// Validate additional properties (without including them in output)
 	if !additionalProps {
 		for propName := range obj {
 			if _, defined := properties[propName]; !defined {
 				return nil, fmt.Errorf("propriedade adicional não permitida: '%s'", propName)
-			}
-		}
-	} else {
-		// Se propriedades adicionais são permitidas, copiar as que não estão no schema
-		for propName, propValue := range obj {
-			if _, defined := properties[propName]; !defined {
-				result[propName] = propValue
 			}
 		}
 	}

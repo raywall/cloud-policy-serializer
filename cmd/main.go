@@ -7,76 +7,29 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/raywall/aws-policy-engine-go/pkg/core/policy"
-	"github.com/raywall/aws-policy-engine-go/pkg/core/request"
-	"github.com/raywall/aws-policy-engine-go/pkg/core/response"
-	"github.com/raywall/aws-policy-engine-go/pkg/json/schema"
+	"github.com/raywall/aws-policy-engine-go/pkg/engine"
 )
 
-type Error struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
-	Data    error  `json:"data"`
-}
-
-var (
-	requestSchema  *schema.Schema
-	responseSchema *schema.Schema
-	policyEngine   *policy.PolicyEngine
-)
+var ec engine.PolicyEngineContext
 
 func init() {
-	// Carrega o JSON schema draft-07 do request
-	sl, err := schema.NewLoader("examples/request_schema.json")
+	var err error
+
+	ec, err = engine.NewEngine(
+		"examples/request_schema.json",
+		"examples/response_schema.json",
+		"examples/policy.yaml",
+	)
 	if err != nil {
 		panic(err)
 	}
 
-	requestSchema, err = sl.Load()
-	if err != nil {
-		panic(err)
-	}
-
-	// Carrega o JSON Schema draft-07 do response
-	rl, err := schema.NewLoader("examples/response_schema.json")
-	if err != nil {
-		panic(err)
-	}
-
-	responseSchema, err = rl.Load()
-	if err != nil {
-		panic(err)
-	}
-
-	// Carrega o arquivo de políticas em formato YAML
-	pl, err := policy.NewLoader("examples/policy.yaml")
-	if err != nil {
-		panic(err)
-	}
-
-	policyEngine, err = pl.Load()
-	if err != nil {
-		panic(err)
-	}
-
-	// Exemplo de dados JSON a validar
-	data, err := os.ReadFile("examples/request_data.json")
-	if err != nil {
-		panic(err)
-	}
-
-	var jsonData interface{}
-	if err = json.Unmarshal(data, &jsonData); err != nil {
+	if err := ec.Load(); err != nil {
 		panic(err)
 	}
 }
 
 func handleEvaluate(w http.ResponseWriter, r *http.Request) {
-	var (
-		req = &request.Request{}
-		res *response.Response
-	)
-
 	// Verifica se o método é POST
 	if r.Method != http.MethodPost {
 		http.Error(w, "Método não permitido", http.StatusMethodNotAllowed)
@@ -84,52 +37,29 @@ func handleEvaluate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Decodifica o JSON recebido no body da requisição
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(req)
-	if err != nil {
-		responseHandler(w, nil, &Error{
-			Code:    "invalid_json_decode",
-			Message: "Erro ao decodificar requisição",
-			Data:    err,
-		})
+	if err := ec.CreateRequest(r); err != nil {
+		responseHandler(w, nil, err)
 		return
 	}
-	defer r.Body.Close()
 
 	// Verifica se a solicitação está em modo debug
 	responseDebug := false
-	queryValues, err := url.ParseQuery(r.URL.RawQuery)
+	queryValues, _ := url.ParseQuery(r.URL.RawQuery)
 	if queryValues.Get("debug") == "true" {
 		responseDebug = true
 	}
 
 	// Instancia o response da requisição
-	res = response.NewResponse(responseSchema, req, responseDebug)
-
-	// Validar o JSON Schema dos dados recebidos
-	isValid, errs := requestSchema.Validate(req.Data)
-	if !isValid {
-		data := []string{"Erros de validação:"}
-		for _, e := range errs {
-			data = append(data, fmt.Sprintf("- %s", e))
-		}
-
-		res.SendError(w, "invalid_json_schema", err)
-		return
-	}
+	_ = ec.CreateResponse(responseDebug)
 
 	// Executar políticas nos dados recebidos
-	if err = policyEngine.ExecutePolicies(req); err != nil {
-		res.SendError(w, "invalid_exec_policies", err)
+	if err := ec.ExecutePolicies(); err != nil {
+		responseHandler(w, nil, err)
 		return
 	}
 
-	// Formata e envia a resposta de acordo com o Schema
-	res.BuildResponse(policyEngine, req.Data, nil)
-	fmt.Println(res.Error)
-
 	// Enviar resposta
-	res.Send(w)
+	ec.Answer(w)
 }
 
 func main() {
@@ -156,7 +86,7 @@ func main() {
 }
 
 // responseHandler formata e envia a resposta de uma requisição
-func responseHandler(w http.ResponseWriter, formattedResponse interface{}, err *Error) {
+func responseHandler(w http.ResponseWriter, formattedResponse interface{}, err *engine.Error) {
 	// Se houver erro na formatação
 	if err != nil {
 		errorResponse := map[string]interface{}{
