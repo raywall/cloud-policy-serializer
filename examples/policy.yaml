@@ -1,5 +1,12 @@
 # Arquivo de Políticas
 
+
+# CustomPlugin:
+# - name: custom-validation
+#   plugin: custom-validator
+#   params:
+#     input: {{ .request.body }}
+
 ValidarIdade:
   - $.idade >= 18
   - $.tipo == "adulto"

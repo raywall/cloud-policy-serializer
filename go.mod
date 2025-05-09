@@ -6,6 +6,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.29.14
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.79.2
 	github.com/aws/aws-sdk-go-v2/service/ssm v1.58.2
+	github.com/gorilla/mux v1.8.1
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (

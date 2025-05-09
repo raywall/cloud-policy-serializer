@@ -56,13 +56,16 @@ func (pe *PolicyEngine) evaluateComparisonOperation(left, right interface{}, ope
 		return !reflect.DeepEqual(left, right), nil
 	case "IN":
 		// Verificar se right é um array e se left está contido nele
-		rightArray, ok := right.([]interface{})
-		if !ok {
+		if !utils.IsArray(right.(string)) {
 			return false, fmt.Errorf("o operador IN requer um array no lado direito")
 		}
 
-		for _, item := range rightArray {
-			if reflect.DeepEqual(left, item) {
+		arr, err := utils.StringToArray(right.(string))
+		if err != nil {
+			return false, fmt.Errorf("falha ao converter o array: %w", err)
+		}
+		for _, item := range arr {
+			if reflect.DeepEqual(left, utils.RemoveOuterQuotes(item)) {
 				return true, nil
 			}
 		}
