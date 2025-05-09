@@ -115,6 +115,21 @@ func (pe *PolicyEngine) executeRule(rule string) ConditionResult {
 		return result
 	}
 
+	// Verifica se é uma instrução ADD
+	if addMatch := regexp.MustCompile(`^ADD\s+(.+?)\s*=\s*(\{.*\})$`).FindStringSubmatch(rule); len(addMatch) > 0 {
+		targetPath := addMatch[1]
+		jsonData := addMatch[2]
+
+		err := pe.executeAddOperation(targetPath, jsonData)
+		if err != nil {
+			result.Error = err.Error()
+			return result
+		}
+
+		result.Success = true
+		return result
+	}
+
 	// Caso contrário, é uma condição de validação padrão
 	res, err := pe.evaluateCondition(rule)
 	if err != nil {

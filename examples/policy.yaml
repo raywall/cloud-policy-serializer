@@ -1,29 +1,32 @@
 # Arquivo de Políticas
 
 ValidarIdade:
-- $.idade >= 18
-- $.tipo == "adulto"
+  - $.idade >= 18
+  - $.tipo == "adulto"
 
 ValidarValorTransacao:
-- $.valor > 0
-- $.valor <= $.limiteMaximo
-- $.moeda == "BRL" OR $.moeda == "USD"
+  - $.valor > 0
+  - $.valor <= $.limiteMaximo
+  - $.moeda == "BRL" OR $.moeda == "USD"
 
 CalcularDesconto:
-- $.valor > 100
-- SET $.desconto = $.valor * 0.1
-- IF $.cliente.tipo == "premium" THEN SET $.desconto = $.valor * 0.15
+  - $.valor > 100
+  - SET $.desconto = $.valor * 0.1
+  - IF $.cliente.tipo == "premium" THEN SET $.desconto = $.valor * 0.15
 
 AplicarImpostos:
-- SET $.impostos.iss = $.valor * 0.05
-- IF $.tipo == "servico" THEN SET $.impostos.pis = $.valor * 0.0165
+  - SET $.impostos.iss = $.valor * 0.05
+  - IF $.tipo == "servico" THEN SET $.impostos.pis = $.valor * 0.0165
 
 ValidarEndereco:
-- $.endereco.cep != null
-- $.endereco.cidade != null
-- $.endereco.estado IN ["SP", "RJ", "MG", "RS"]
+  - $.endereco.cep != null
+  - $.endereco.cidade != null
+  - $.endereco.estado IN ["SP", "RJ", "MG", "RS"]
 
 VerificarLimites:
-- COUNT($.transacoes) < $.limites.maxTransacoes
-- SET $.somaTransacoes = SUM($.transacoes[*].valor)
-- $.somaTransacoes + $.valor <= $.limites.valorTotal
+  - COUNT($.transacoes) < $.limites.maxTransacoes
+  - SET $.somaTransacoes = SUM($.transacoes[*].valor)
+  - $.somaTransacoes + $.valor <= $.limites.valorTotal
+
+VerificaArray:
+  - ADD [{"nome":"teste","valor":1234}] TO $.endereco.estado
