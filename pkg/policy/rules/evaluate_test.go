@@ -1,4 +1,4 @@
-package rule
+package rules
 
 import (
 	"fmt"
@@ -34,7 +34,7 @@ var (
 )
 
 func TestPolicySimpleCondition(t *testing.T) {
-	rules := []struct {
+	all_rules := []struct {
 		name     string
 		rule     string
 		expected bool
@@ -48,7 +48,7 @@ func TestPolicySimpleCondition(t *testing.T) {
 	}
 
 	t.Run("", func(t *testing.T) {
-		for _, cenario := range rules {
+		for _, cenario := range all_rules {
 			actual, _, err := EvaluateRule(cenario.rule, simpleConditionPayload)
 
 			assert.NoError(t, err, "Não deveria haver erros")

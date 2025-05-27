@@ -1,4 +1,4 @@
-package pkg
+package core
 
 import (
 	"github.com/raywall/cloud-policy-serializer/pkg/json/schema"

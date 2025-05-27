@@ -1,4 +1,4 @@
-package pkg
+package core
 
 import (
 	"encoding/json"
@@ -9,7 +9,7 @@ import (
 
 	"github.com/raywall/cloud-policy-serializer/pkg/json/schema"
 	"github.com/raywall/cloud-policy-serializer/pkg/policy"
-	"github.com/raywall/cloud-policy-serializer/pkg/policy/rule"
+	"github.com/raywall/cloud-policy-serializer/pkg/policy/rules"
 )
 
 // ExecutePolicies executa as políticas especificadas contra os dados.
@@ -31,12 +31,12 @@ func (ec *EngineContext) ExecutePolicies(data map[string]interface{}, policyName
 
 		currentPolicyAllRulesPassed := true
 		var currentPolicyFirstError error
-		var ruleResultsForThisPolicy []rule.RuleExecutionResult
+		var ruleResultsForThisPolicy []rules.RuleExecutionResult
 
 		for _, ruleStr := range policyDef.Rules {
-			passedThisRule, details, errThisRule := rule.EvaluateRule(ruleStr, data)
+			passedThisRule, details, errThisRule := rules.EvaluateRule(ruleStr, data)
 
-			ruleExecRes := rule.RuleExecutionResult{
+			ruleExecRes := rules.RuleExecutionResult{
 				Rule:    ruleStr,
 				Passed:  passedThisRule,
 				Details: details,

@@ -1,7 +1,7 @@
 package policy
 
 import (
-	"github.com/raywall/cloud-policy-serializer/pkg/policy/rule"
+	"github.com/raywall/cloud-policy-serializer/pkg/policy/rules"
 )
 
 // PolicyDefinition representa uma única política com suas regras.
@@ -16,5 +16,5 @@ type PolicyExecutionResult struct {
 	PolicyName  string
 	Passed      bool
 	Error       error // Mensagem de erro se a avaliação falhou ou a regra não foi cumprida
-	RuleResults []rule.RuleExecutionResult
+	RuleResults []rules.RuleExecutionResult
 }

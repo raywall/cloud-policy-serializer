@@ -1,4 +1,4 @@
-package rule
+package rules
 
 import (
 	"fmt"
@@ -34,7 +34,7 @@ var (
 )
 
 func TestPolicyIfCondition(t *testing.T) {
-	rules := []struct {
+	all_rules := []struct {
 		name     string
 		rule     string
 		expected interface{}
@@ -48,7 +48,7 @@ func TestPolicyIfCondition(t *testing.T) {
 	}
 
 	t.Run("", func(t *testing.T) {
-		for _, cenario := range rules {
+		for _, cenario := range all_rules {
 			tr := NewTrimmedRule(cenario.rule)
 			value := tr.Condition("", ifConditionPayload)
 

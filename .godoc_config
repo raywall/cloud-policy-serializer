@@ -1,18 +1,18 @@
 {
 	"PkgHandler": {
-		"Pattern": "/aws-policy-engine-go",
-		"StripPrefix": "/aws-policy-engine-go",
+		"Pattern": "/cloud-policy-serializer",
+		"StripPrefix": "/cloud-policy-serializer",
 		"Include": [
-			"/src/github.com/raywall/aws-policy-engine-go/cmd",
-			"/src/github.com/raywall/aws-policy-engine-go/examples",
-			"/src/github.com/raywall/aws-policy-engine-go/pkg"
+			"/src/github.com/raywall/cloud-policy-serializer/cmd",
+			"/src/github.com/raywall/cloud-policy-serializer/examples",
+			"/src/github.com/raywall/cloud-policy-serializer/pkg"
 		],
 		"Exclude": [
-			"/src/github.com/raywall/aws-policy-engine-go/sam",
-			"/src/github.com/raywall/aws-policy-engine-go/.aws-sam",
-			"/src/github.com/raywall/aws-policy-engine-go/*.sh"
-			"/src/github.com/raywall/aws-policy-engine-go/Makefile"
-			"/src/github.com/raywall/aws-policy-engine-go/go.*"
+			"/src/github.com/raywall/cloud-policy-serializer/sam",
+			"/src/github.com/raywall/cloud-policy-serializer/.aws-sam",
+			"/src/github.com/raywall/cloud-policy-serializer/*.sh",
+			"/src/github.com/raywall/cloud-policy-serializer/Makefile",
+			"/src/github.com/raywall/cloud-policy-serializer/go.*"
 		],
 		"IgnoredSuffixes": [
 			"iface"
@@ -20,7 +20,7 @@
 	},
 	"Github": {
 		"Tag": "main",
-		"Repo": "/raywall/aws-policy-engine-go",
+		"Repo": "/raywall/cloud-policy-serializer",
 		"UseGithub": true
 	}
 }

@@ -1,4 +1,4 @@
-package rule
+package rules
 
 import (
 	"fmt"
@@ -32,7 +32,7 @@ var getValuePayload = map[string]interface{}{
 }
 
 func TestPolicyGetValueFunction(t *testing.T) {
-	rules := []struct {
+	all_rules := []struct {
 		name     string
 		rule     string
 		expected interface{}
@@ -48,7 +48,7 @@ func TestPolicyGetValueFunction(t *testing.T) {
 	}
 
 	t.Run("", func(t *testing.T) {
-		for _, cenario := range rules {
+		for _, cenario := range all_rules {
 			actual, err := getValue(getValuePayload, cenario.rule)
 
 			assert.NoError(t, err, "Não deveria haver erros")
