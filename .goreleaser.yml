@@ -1,12 +1,35 @@
-project_name: aws-policy-engine-go
+# .goreleaser.yml
+version: 2
+
+project_name: cloud-policy-serializer
+
+builds:
+- id: cloud-easy-connector
+  main: ./cmd
+  binary: cloud-policy-serializer
+  env:
+  - CGO_ENABLED=0
+  goos:
+  - linux
+  - windows
+  - darwin
+  goarch:
+  - amd64
+  - arm64
+  - arm
+
 release:
+  name_template: "Release {{ .Tag }}"
+  disable: true
   github:
     owner: raywall
-    name: aws-policy-engine-go
-  name_template: "{{ .Tag }}"
-  draft: false
-  prerelease: false
-  goarch:
-    - amd64
-builds:
-  - ldflags: -X main.version={{.Version}}
+    name: cloud-policy-serializer
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'
+    - 'Merge pull request'
+    - 'Merge branch'

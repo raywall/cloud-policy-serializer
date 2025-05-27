@@ -32,7 +32,7 @@
       "ValidarIdade",
       "ValidarValorTransacao",
       "CalcularDesconto",
-      "ValidarEndereco",
-      "VerificarLimites"
+      "AplicarImpostos",
+      "ValidarEndereco"
     ]
   }
