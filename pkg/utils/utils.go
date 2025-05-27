@@ -1,11 +1,11 @@
-package main
+package utils
 
 import (
 	"encoding/json"
 	"io/ioutil"
 
-	"policy-engine/json/schema"
-	"policy-engine/policy"
+	"github.com/raywall/cloud-policy-serializer/pkg/json/schema"
+	"github.com/raywall/cloud-policy-serializer/pkg/policy"
 
 	"gopkg.in/yaml.v3"
 )

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/raywall/aws-policy-engine-go/pkg/core/loader"
+	"github.com/raywall/cloud-policy-serializer/pkg/core/loader"
 )
 
 type (

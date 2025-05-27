@@ -1,4 +1,4 @@
-package main
+package pkg
 
 import (
 	"encoding/json"
@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"policy-engine/json/schema"
-	"policy-engine/policy"
-	"policy-engine/policy/rule"
+	"github.com/raywall/cloud-policy-serializer/pkg/json/schema"
+	"github.com/raywall/cloud-policy-serializer/pkg/policy"
+	"github.com/raywall/cloud-policy-serializer/pkg/policy/rule"
 )
 
 // ExecutePolicies executa as políticas especificadas contra os dados.

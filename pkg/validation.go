@@ -1,10 +1,10 @@
-package main
+package pkg
 
 import (
 	"fmt"
 	"reflect"
 
-	"policy-engine/json/schema"
+	"github.com/raywall/cloud-policy-serializer/pkg/json/schema"
 )
 
 // --- Validação de Schema (Simplificada) ---

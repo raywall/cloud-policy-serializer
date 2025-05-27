@@ -1,9 +1,8 @@
-module policy-engine
+module github.com/raywall/cloud-policy-serializer
 
 go 1.24.1
 
 require (
-	github.com/raywall/aws-policy-engine-go v0.0.0-20250513162926-d20791d0bc6e
 	gopkg.in/yaml.v3 v3.0.1
 )
 

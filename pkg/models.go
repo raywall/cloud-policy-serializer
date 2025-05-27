@@ -1,8 +1,8 @@
-package main
+package pkg
 
 import (
-	"policy-engine/json/schema"
-	"policy-engine/policy"
+	"github.com/raywall/cloud-policy-serializer/pkg/json/schema"
+	"github.com/raywall/cloud-policy-serializer/pkg/policy"
 )
 
 // Para checagem de tipos na validação de schema e operações

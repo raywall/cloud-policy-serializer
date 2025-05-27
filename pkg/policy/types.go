@@ -1,7 +1,7 @@
 package policy
 
 import (
-	"policy-engine/policy/rule"
+	"github.com/raywall/cloud-policy-serializer/pkg/policy/rule"
 )
 
 // PolicyDefinition representa uma única política com suas regras.
