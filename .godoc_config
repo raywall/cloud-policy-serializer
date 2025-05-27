@@ -1,0 +1,26 @@
+{
+	"PkgHandler": {
+		"Pattern": "/aws-policy-engine-go",
+		"StripPrefix": "/aws-policy-engine-go",
+		"Include": [
+			"/src/github.com/raywall/aws-policy-engine-go/cmd",
+			"/src/github.com/raywall/aws-policy-engine-go/examples",
+			"/src/github.com/raywall/aws-policy-engine-go/pkg"
+		],
+		"Exclude": [
+			"/src/github.com/raywall/aws-policy-engine-go/sam",
+			"/src/github.com/raywall/aws-policy-engine-go/.aws-sam",
+			"/src/github.com/raywall/aws-policy-engine-go/*.sh"
+			"/src/github.com/raywall/aws-policy-engine-go/Makefile"
+			"/src/github.com/raywall/aws-policy-engine-go/go.*"
+		],
+		"IgnoredSuffixes": [
+			"iface"
+		]
+	},
+	"Github": {
+		"Tag": "main",
+		"Repo": "/raywall/aws-policy-engine-go",
+		"UseGithub": true
+	}
+}

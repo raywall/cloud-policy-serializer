@@ -1,0 +1,12 @@
+project_name: aws-policy-engine-go
+release:
+  github:
+    owner: raywall
+    name: aws-policy-engine-go
+  name_template: "{{ .Tag }}"
+  draft: false
+  prerelease: false
+  goarch:
+    - amd64
+builds:
+  - ldflags: -X main.version={{.Version}}
