@@ -84,7 +84,6 @@ func (ec *EngineContext) ExecutePolicies(data map[string]interface{}, policyName
 	return results, allPassedOverall
 }
 
-// --- Motor ---
 // NewEngineContext cria um novo contexto de motor.
 func NewEngineContext(reqSchema, respSchema *schema.Schema, policiesConfig map[string]policy.PolicyDefinition, inputType string) *EngineContext {
 	return &EngineContext{

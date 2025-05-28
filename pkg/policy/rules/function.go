@@ -8,7 +8,6 @@ import (
 	"strings"
 )
 
-// --- Funções Utilitárias para map[string]interface{} (sem alterações) ---
 // getValue recupera um valor de um map[string]interface{} aninhado usando um caminho separado por pontos.
 // Exemplo de caminho: "user.address.zipcode" ou "items[0].name"
 func getValue(data map[string]interface{}, path string) (interface{}, error) {

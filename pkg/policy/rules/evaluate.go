@@ -11,21 +11,21 @@ import (
 // evaluateRule avalia uma única string de regra de política contra os dados.
 // Retorna: bool (passou), string (detalhes), error (erro de avaliação)
 func EvaluateRule(rule string, data map[string]interface{}) (bool, string, error) {
-	tr := NewTrimmedRule(rule)
+	tr := NewRule(rule)
 
 	// Lógica OR (sem alterações)
-	if res := tr.Or(rule, data); res.Executed {
-		return res.Passed, res.Detail, res.Err
+	if res := tr.OrCondition(data); res.Executed {
+		return res.Passed, res.Details, res.Err
 	}
 
 	// Lógica SET
-	if res := tr.Set(rule, data); res.Executed {
-		return res.Passed, res.Detail, res.Err
+	if res := tr.SetValue(data); res.Executed {
+		return res.Passed, res.Details, res.Err
 	}
 
 	// Lógica IF THEN (sem alterações na estrutura, mas usará EXP se presente na ação)
-	if res := tr.Condition(rule, data); res.Executed {
-		return res.Passed, res.Detail, res.Err
+	if res := tr.IfCondition(data); res.Executed {
+		return res.Passed, res.Details, res.Err
 	}
 
 	trimmedRule := tr.String()

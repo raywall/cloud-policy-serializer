@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var getValuePayload = map[string]interface{}{
+var functionPayload = map[string]interface{}{
 	"valor":        150.00,
 	"limiteMaximo": 500.00,
 	"moeda":        "BRL",
@@ -43,13 +43,13 @@ func TestPolicyGetValueFunction(t *testing.T) {
 		{name: "first order number attribute", rule: `$.idade`, expected: 21},
 		{name: "second order number attribute", rule: `$.limites.maxTransacoes`, expected: 10},
 		{name: "third order number attribute", rule: `$.transacoes[0].valor`, expected: 50.0},
-		{name: "first order object attribute", rule: `$.limites`, expected: getValuePayload["limites"]},
-		{name: "second order object attribute", rule: `$.transacoes[0]`, expected: (getValuePayload["transacoes"].([]interface{}))[0]},
+		{name: "first order object attribute", rule: `$.limites`, expected: functionPayload["limites"]},
+		{name: "second order object attribute", rule: `$.transacoes[0]`, expected: (functionPayload["transacoes"].([]interface{}))[0]},
 	}
 
 	t.Run("", func(t *testing.T) {
 		for _, cenario := range all_rules {
-			actual, err := getValue(getValuePayload, cenario.rule)
+			actual, err := getValue(functionPayload, cenario.rule)
 
 			assert.NoError(t, err, "Não deveria haver erros")
 			assert.Equal(t, actual, cenario.expected, fmt.Sprintf("O resultado está incorreto (%s)", cenario.name))

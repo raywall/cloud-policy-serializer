@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	ifConditionPayload = map[string]interface{}{
+	conditionPayload = map[string]interface{}{
 		"valor":        150.00,
 		"limiteMaximo": 500.00,
 		"moeda":        "BRL",
@@ -49,10 +49,31 @@ func TestPolicyIfCondition(t *testing.T) {
 
 	t.Run("", func(t *testing.T) {
 		for _, cenario := range all_rules {
-			tr := NewTrimmedRule(cenario.rule)
-			value := tr.Condition("", ifConditionPayload)
-
+			value := NewRule(cenario.rule).IfCondition(conditionPayload)
 			assert.Equal(t, value.Passed, cenario.expected, fmt.Sprintf("O valor está incorreto (%s)", cenario.name))
+		}
+	})
+}
+
+func TestPolicyOrCondition(t *testing.T) {
+	all_rules := []struct {
+		name     string
+		rule     string
+		executed bool
+		passed   bool
+	}{
+		{name: "equal strings", rule: `$.moeda == "BRL" OR $.moeda == "USD"`, executed: true, passed: true},
+		{name: "equal string and equal int", rule: `$.moeda == "EUR" OR $.idade == 21`, executed: true, passed: true},
+		{name: "diferent string and equal int", rule: `$.moeda != "EUR" OR $.idade == 25`, executed: true, passed: true},
+		{name: "equal string and equal int", rule: `$.moeda == "EUR" OR $.idade == 25`, executed: true, passed: false},
+	}
+
+	t.Run("", func(t *testing.T) {
+		for _, cenario := range all_rules {
+			value := NewRule(cenario.rule).OrCondition(conditionPayload)
+
+			assert.Equal(t, value.Executed, cenario.executed, "%v (executed): expected %v, got %v", cenario.name, cenario.executed, value.Executed)
+			assert.Equal(t, value.Passed, cenario.passed, "%v (passed): expected %v, got %v", cenario.name, cenario.passed, value.Passed)
 		}
 	})
 }

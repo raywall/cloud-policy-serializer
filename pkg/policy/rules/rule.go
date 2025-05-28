@@ -6,17 +6,47 @@ import (
 	"strings"
 )
 
-func (tr *TrimmedRule) Set(rule string, data map[string]interface{}) TrimmedRuleExecutionResult {
+type Rule interface {
+	String() string
+	IfCondition(data map[string]interface{}) RuleExecutionResult
+	OrCondition(data map[string]interface{}) RuleExecutionResult
+	SetValue(data map[string]interface{}) RuleExecutionResult
+}
+
+type rule string
+
+type RuleExecutionResult struct {
+	Rule     string `json:"rule"`
+	Passed   bool   `json:"passed"`
+	Executed bool   `json:"executed"`
+	Details  string `json:"details"`
+	Err      error  `json:"error"`
+}
+
+func NewRule(raw_rule string) Rule {
+	trimmedRule := rule(strings.TrimSpace(raw_rule))
+	return &trimmedRule
+}
+
+func (tr *rule) String() string {
+	return string(*tr)
+}
+
+func (tr *rule) IfCondition(data map[string]interface{}) RuleExecutionResult {
+	return ifCondition(tr.String(), data)
+}
+
+func (tr *rule) SetValue(data map[string]interface{}) RuleExecutionResult {
 	trimmedRule := tr.String()
 
 	if strings.HasPrefix(trimmedRule, "SET ") {
 		parts := strings.SplitN(strings.TrimPrefix(trimmedRule, "SET "), "=", 2)
 		if len(parts) != 2 {
-			return TrimmedRuleExecutionResult{
+			return RuleExecutionResult{
 				Executed: true,
 				Passed:   false,
-				Detail:   "",
-				Err:      fmt.Errorf("regra SET inválida: %s", rule),
+				Details:  "",
+				Err:      fmt.Errorf("regra SET inválida: %s", trimmedRule),
 			}
 		}
 		targetPath := strings.TrimSpace(parts[0])
@@ -28,10 +58,10 @@ func (tr *TrimmedRule) Set(rule string, data map[string]interface{}) TrimmedRule
 			calculatedValue, details, err := evaluateMathExpression(expr, data)
 			evalDetails = fmt.Sprintf("EXP(%s)", details)
 			if err != nil {
-				return TrimmedRuleExecutionResult{
+				return RuleExecutionResult{
 					Executed: true,
 					Passed:   false,
-					Detail:   fmt.Sprintf("Erro ao avaliar EXP em SET para '%s': %s", targetPath, evalDetails),
+					Details:  fmt.Sprintf("Erro ao avaliar EXP em SET para '%s': %s", targetPath, evalDetails),
 					Err:      err,
 				}
 			}
@@ -39,10 +69,10 @@ func (tr *TrimmedRule) Set(rule string, data map[string]interface{}) TrimmedRule
 		} else if strings.HasPrefix(valueStr, "$.") { // Atribuição direta de caminho
 			val, err := getValue(data, valueStr)
 			if err != nil {
-				return TrimmedRuleExecutionResult{
+				return RuleExecutionResult{
 					Executed: true,
 					Passed:   false,
-					Detail:   fmt.Sprintf("Falha ao obter valor para SET RHS path '%s': %v", valueStr, err),
+					Details:  fmt.Sprintf("Falha ao obter valor para SET RHS path '%s': %v", valueStr, err),
 					Err:      err,
 				}
 			}
@@ -66,22 +96,26 @@ func (tr *TrimmedRule) Set(rule string, data map[string]interface{}) TrimmedRule
 
 		err := setValue(data, targetPath, valueToSet)
 		if err != nil {
-			return TrimmedRuleExecutionResult{
+			return RuleExecutionResult{
 				Executed: true,
 				Passed:   false,
-				Detail:   fmt.Sprintf("Falha ao SET valor para path '%s': %v. Detalhes da avaliação: %s", targetPath, err, evalDetails),
+				Details:  fmt.Sprintf("Falha ao SET valor para path '%s': %v. Detalhes da avaliação: %s", targetPath, err, evalDetails),
 				Err:      err,
 			}
 		}
-		return TrimmedRuleExecutionResult{
+		return RuleExecutionResult{
 			Executed: true,
 			Passed:   true,
-			Detail:   fmt.Sprintf("SET %s = %v (Detalhes: %s)", targetPath, valueToSet, evalDetails),
+			Details:  fmt.Sprintf("SET %s = %v (Detalhes: %s)", targetPath, valueToSet, evalDetails),
 			Err:      nil,
 		}
 	}
 
-	return TrimmedRuleExecutionResult{
+	return RuleExecutionResult{
 		Executed: false,
 	}
+}
+
+func (tr *rule) OrCondition(data map[string]interface{}) RuleExecutionResult {
+	return orCondition(tr.String(), data)
 }
